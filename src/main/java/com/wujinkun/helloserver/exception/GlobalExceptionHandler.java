@@ -1,19 +1,31 @@
 package com.wujinkun.helloserver.exception;
 
 import com.wujinkun.helloserver.common.Result;
+import com.wujinkun.helloserver.common.ResultCode;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-
-@RestControllerAdvice
+/**
+ * 全局异常处理器（实验扩展：统一处理所有Controller层异常，返回标准Result）
+ */
+@RestControllerAdvice // 核心注解：全局捕获Controller异常
 public class GlobalExceptionHandler {
 
-    // 拦截工程中所有异常
+    /**
+     * 处理所有未知异常（兜底）
+     */
     @ExceptionHandler(Exception.class)
-    public Result<String> handleAllException(Exception e) {
-        // 打印异常信息（方便开发调试，实验可保留）
+    public Result<?> handleException(Exception e) {
+        // 打印异常栈（用于排查问题，生产环境可优化）
         e.printStackTrace();
-        // 返回统一错误响应，携带异常信息
-        return Result.error(500, "服务器异常：" + e.getMessage());
+        return Result.error(ResultCode.ERROR);
+    }
+
+    /**
+     * 处理参数错误异常（可选扩展）
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public Result<?> handleIllegalArgumentException(IllegalArgumentException e) {
+        return Result.error(ResultCode.PARAM_ERROR.getCode(), e.getMessage());
     }
 }
