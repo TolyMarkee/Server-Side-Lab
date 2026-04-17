@@ -11,4 +11,6 @@ public interface UserService {
     Result<String> register(UserDTO userDTO);
     // 登录
     Result<String> login(UserDTO userDTO);
+    // 【实验五新增】根据ID查询用户
+    Result<String> getUserById(Long id);
 }

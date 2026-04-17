@@ -30,11 +30,13 @@ public class UserController {
     }
 
     /**
-     * 查询用户（公开接口）
+     * 查询用户（公开接口）【实验五修改：改为调用真实数据库】
      */
     @GetMapping("/{id}")
     public Result<String> getUser(@PathVariable Long id) {
-        return Result.success("查询用户成功，ID：" + id);
+        // 原来的假返回：return Result.success("查询用户成功，ID: " + id);
+        // 现在改成调用Service的真实查询方法
+        return userService.getUserById(id);
     }
 
     /**
@@ -42,6 +44,6 @@ public class UserController {
      */
     @DeleteMapping("/{id}")
     public Result<String> deleteUser(@PathVariable Long id) {
-        return Result.success("删除用户成功，ID：" + id);
+        return Result.success("删除用户成功，ID: " + id);
     }
 }

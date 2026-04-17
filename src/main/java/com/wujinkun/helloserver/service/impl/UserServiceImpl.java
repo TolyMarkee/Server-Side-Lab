@@ -9,7 +9,7 @@ import com.wujinkun.helloserver.mapper.UserMapper;
 import com.wujinkun.helloserver.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.UUID;
+import java.util.UUID; // 导入UUID，用于生成Token
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -19,13 +19,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Result<String> register(UserDTO userDTO) {
-        // 判断用户名是否存在
+        // 1. 判断用户名是否存在
         User exist = userMapper.selectOne(new LambdaQueryWrapper<User>()
                 .eq(User::getUsername, userDTO.getUsername()));
         if (exist != null) {
             return Result.error(ResultCode.USER_HAS_EXISTED);
         }
-        // 写入数据库
+        // 2. 写入数据库
         User user = new User();
         user.setUsername(userDTO.getUsername());
         user.setPassword(userDTO.getPassword());
@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Result<String> login(UserDTO userDTO) {
-        // 查询数据库验证
+        // 1. 查询数据库验证
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
                 .eq(User::getUsername, userDTO.getUsername()));
         if (user == null) {
@@ -44,6 +44,18 @@ public class UserServiceImpl implements UserService {
         if (!user.getPassword().equals(userDTO.getPassword())) {
             return Result.error(ResultCode.PASSWORD_ERROR);
         }
-        return Result.success("登录成功，Token：Bearer-" + UUID.randomUUID());
+        // 2. 登录成功，返回Token
+        return Result.success("登录成功，Token: Bearer-" + UUID.randomUUID());
+    }
+
+    // 【实验五新增】实现根据ID查询用户
+    @Override
+    public Result<String> getUserById(Long id) {
+        // 调用MyBatis-Plus的selectById查询数据库
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            return Result.error(ResultCode.USER_NOT_EXIST);
+        }
+        return Result.success("查询用户成功：" + user.toString());
     }
 }
