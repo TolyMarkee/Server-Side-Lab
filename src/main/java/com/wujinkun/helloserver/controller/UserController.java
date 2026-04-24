@@ -1,5 +1,15 @@
+
 package com.wujinkun.helloserver.controller;
 
+import com.wujinkun.helloserver.common.Result;
+import com.wujinkun.helloserver.dto.UserDTO;
+import com.wujinkun.helloserver.entity.User;
+// 👇 新增分页所需的包
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.springframework.web.bind.annotation.RequestParam;
+import com.wujinkun.helloserver.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 import com.wujinkun.helloserver.common.Result;
 import com.wujinkun.helloserver.dto.UserDTO;
 import com.wujinkun.helloserver.service.UserService;
@@ -45,5 +55,15 @@ public class UserController {
     @DeleteMapping("/{id}")
     public Result<String> deleteUser(@PathVariable Long id) {
         return Result.success("删除用户成功，ID: " + id);
+    }// ===================== 第六次实验新增：分页查询接口 =====================
+    /**
+     * 分页查询用户列表
+     */
+    @GetMapping("/page")
+    public Result<Page<User>> getUserPage(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize
+    ) {
+        return userService.getUserPage(pageNum, pageSize);
     }
 }

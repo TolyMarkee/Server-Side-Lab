@@ -23,11 +23,18 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- MyBatis-Plus (兼容Spring Boot 3.2.x) -->
+        <!-- MyBatis-Plus Spring Boot 3 Starter -->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
-            <version>3.5.9</version>
+            <version>3.5.10</version>
+        </dependency>
+
+        <!-- MyBatis-Plus 分页插件所需 JSQLParser（3.5.9+ 需显式引入） -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-jsqlparser</artifactId>
+            <version>3.5.10</version>
         </dependency>
 
         <!-- PostgreSQL驱动 -->

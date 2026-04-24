@@ -1,6 +1,8 @@
 package com.wujinkun.helloserver.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+// 👇 新增分页导入包
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wujinkun.helloserver.common.Result;
 import com.wujinkun.helloserver.common.ResultCode;
 import com.wujinkun.helloserver.dto.UserDTO;
@@ -57,5 +59,16 @@ public class UserServiceImpl implements UserService {
             return Result.error(ResultCode.USER_NOT_EXIST);
         }
         return Result.success("查询用户成功：" + user.toString());
+    }
+
+    // 第六次实验新增：分页查询
+    @Override
+    public Result<Page<User>> getUserPage(Integer pageNum, Integer pageSize) {
+        // 构建分页对象：当前页、每页条数
+        Page<User> page = new Page<>(pageNum, pageSize);
+        // 执行分页查询（无查询条件，查询全部用户）
+        Page<User> userPage = userMapper.selectPage(page, null);
+        // 返回分页结果
+        return Result.success(userPage);
     }
 }
