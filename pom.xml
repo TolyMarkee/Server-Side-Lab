@@ -3,11 +3,9 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>com.wujinkun.helloserver</groupId>
     <artifactId>Server-Side-Lab</artifactId>
     <version>1.0-SNAPSHOT</version>
-
     <!-- 稳定无冲突版Spring Boot -->
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -15,43 +13,69 @@
         <version>3.2.12</version>
         <relativePath/>
     </parent>
-
     <dependencies>
         <!-- Web核心 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
         <!-- MyBatis-Plus Spring Boot 3 Starter -->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
             <version>3.5.10</version>
         </dependency>
-
         <!-- MyBatis-Plus 分页插件所需 JSQLParser（3.5.9+ 需显式引入） -->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-jsqlparser</artifactId>
             <version>3.5.10</version>
         </dependency>
-
         <!-- PostgreSQL驱动 -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
-
         <!-- Lombok简化代码 -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
-    </dependencies>
+        <!--  新增：第七周实验依赖  -->
+        <!-- Redis缓存依赖 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <!-- Hutool JSON工具，用于序列化缓存数据 -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.8.25</version>
+        </dependency>
 
+        <!-- ==================== 任务9新增：JWT令牌依赖（只加了这里） ==================== -->
+        <!-- JWT 令牌依赖 -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.12.6</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
     <build>
         <plugins>
             <plugin>
