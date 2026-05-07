@@ -1,18 +1,12 @@
-
 package com.wujinkun.helloserver.controller;
 
 import com.wujinkun.helloserver.common.Result;
 import com.wujinkun.helloserver.dto.UserDTO;
 import com.wujinkun.helloserver.entity.User;
-// 👇 新增分页所需的包
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.springframework.web.bind.annotation.RequestParam;
+import com.wujinkun.helloserver.entity.UserInfo;
 import com.wujinkun.helloserver.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import com.wujinkun.helloserver.common.Result;
-import com.wujinkun.helloserver.dto.UserDTO;
-import com.wujinkun.helloserver.service.UserService;
+import com.wujinkun.helloserver.vo.UserDetailVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,47 +17,51 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    /**
-     * 用户注册
-     */
+    // 原有注册
     @PostMapping
     public Result<String> register(@RequestBody UserDTO userDTO) {
         return userService.register(userDTO);
     }
 
-    /**
-     * 用户登录
-     */
+    // 原有登录
     @PostMapping("/login")
     public Result<String> login(@RequestBody UserDTO userDTO) {
         return userService.login(userDTO);
     }
 
-    /**
-     * 查询用户（公开接口）【实验五修改：改为调用真实数据库】
-     */
+    // 原有根据ID查询
     @GetMapping("/{id}")
     public Result<String> getUser(@PathVariable Long id) {
-        // 原来的假返回：return Result.success("查询用户成功，ID: " + id);
-        // 现在改成调用Service的真实查询方法
         return userService.getUserById(id);
     }
 
-    /**
-     * 删除用户（需要Token）
-     */
-    @DeleteMapping("/{id}")
-    public Result<String> deleteUser(@PathVariable Long id) {
-        return Result.success("删除用户成功，ID: " + id);
-    }// ===================== 第六次实验新增：分页查询接口 =====================
-    /**
-     * 分页查询用户列表
-     */
+    // 原有分页
     @GetMapping("/page")
     public Result<Page<User>> getUserPage(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize
     ) {
         return userService.getUserPage(pageNum, pageSize);
+    }
+
+    // 实验7 新增3个接口
+    // 用户详情（多表+Redis）
+    @GetMapping("/{id}/detail")
+    public Result<UserDetailVO> getUserDetail(@PathVariable("id") Long userId) {
+        return userService.getUserDetail(userId);
+    }
+
+    // 更新用户扩展信息
+    @PutMapping("/{id}/detail")
+    public Result<String> updateUserInfo(@PathVariable("id") Long userId,
+                                         @RequestBody UserInfo userInfo) {
+        userInfo.setUserId(userId);
+        return userService.updateUserInfo(userInfo);
+    }
+
+    // 删除用户（修复冲突：加 /delete 后缀）
+    @DeleteMapping("/{id}/delete")
+    public Result<String> deleteUser(@PathVariable("id") Long userId) {
+        return userService.deleteUser(userId);
     }
 }

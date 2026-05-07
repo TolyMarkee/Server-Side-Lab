@@ -1,24 +1,9 @@
 package com.wujinkun.helloserver.config;
 
-import com.wujinkun.helloserver.interceptor.AuthInterceptor;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/**
- * MVC配置类：挂载自定义拦截器，配置拦截/放行规则（实验要求）
- */
-@Configuration // 核心注解：标识为Spring配置类，自动加载
+@Configuration
 public class WebConfig implements WebMvcConfigurer {
-
-    /**
-     * 注册拦截器
-     */
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new AuthInterceptor()) // 挂载自定义鉴权拦截器
-                .addPathPatterns("/api/**") // 拦截/api下的所有请求（核心规则）
-                // 👇 仅在这里追加了分页接口放行，其余代码完全不变
-                .excludePathPatterns("/api/users/login", "/api/users/page");
-    }
+    // 不再注册任何拦截器，全部交给Spring Security管理
 }

@@ -4,7 +4,6 @@ import com.wujinkun.helloserver.common.ResultCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.servlet.HandlerInterceptor;
-
 import java.io.PrintWriter;
 
 /**
@@ -12,7 +11,6 @@ import java.io.PrintWriter;
  * 校验请求头中的Authorization令牌，精细化放行/拦截
  */
 public class AuthInterceptor implements HandlerInterceptor {
-
     /**
      * 请求前置处理：鉴权核心逻辑
      * @return true=放行，false=拦截
@@ -22,22 +20,24 @@ public class AuthInterceptor implements HandlerInterceptor {
         // -------------------------- 步骤1：精细化放行规则（基于HTTP动词+路径） --------------------------
         String method = request.getMethod();
         String uri = request.getRequestURI();
-
         // 规则1：POST /api/users → 新增用户，放行（无需Token）
         boolean isCreateUser = "POST".equalsIgnoreCase(method) && "/api/users".equals(uri);
-        // 规则2：GET /api/users/{id} → 查询用户，放行（无需Token，匹配以/api/users/开头的路径）
+        // 规则2：GET /api/users/{id} → 查询用户，放行（无需Token）
         boolean isGetUser = "GET".equalsIgnoreCase(method) && uri.startsWith("/api/users/");
-        // 规则3：POST /api/users/login → 登录接口，已在WebConfig中全局放行，此处无需重复判断
+        // 规则3：【实验7新增】放行 GET /api/users/{id}/detail 用户详情接口
+        boolean isGetDetail = "GET".equalsIgnoreCase(method) && uri.matches("/api/users/\\d+/detail");
+        // 规则4：【实验7新增】放行 PUT /api/users/{id}/detail 更新详情接口
+        boolean isPutDetail = "PUT".equalsIgnoreCase(method) && uri.matches("/api/users/\\d+/detail");
+        // 规则5：【实验7新增】放行 DELETE /api/users/{id}/delete 删除用户接口
+        boolean isDeleteUser = "DELETE".equalsIgnoreCase(method) && uri.matches("/api/users/\\d+/delete");
 
         // 满足任一公开规则，直接放行
-        if (isCreateUser || isGetUser) {
+        if (isCreateUser || isGetUser || isGetDetail || isPutDetail || isDeleteUser) {
             return true;
         }
-
         // -------------------------- 步骤2：敏感操作Token校验（DELETE/PUT等） --------------------------
         // 从请求头获取令牌（前端传参：Header → Authorization: 令牌值）
         String token = request.getHeader("Authorization");
-
         // 令牌为空/无效 → 拦截，返回401自定义JSON响应
         if (token == null || token.isEmpty()) {
             // 设置响应头：JSON格式+UTF-8编码（解决中文乱码）
@@ -54,7 +54,6 @@ public class AuthInterceptor implements HandlerInterceptor {
             writer.close();
             return false; // 拦截请求，不进入Controller
         }
-
         // 令牌存在 → 放行（实际项目可在此处校验JWT有效性）
         return true;
     }
