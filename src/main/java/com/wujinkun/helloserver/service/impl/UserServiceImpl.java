@@ -1,5 +1,6 @@
 package com.wujinkun.helloserver.service.impl;
 
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wujinkun.helloserver.common.Result;
@@ -9,15 +10,14 @@ import com.wujinkun.helloserver.entity.User;
 import com.wujinkun.helloserver.entity.UserInfo;
 import com.wujinkun.helloserver.mapper.UserInfoMapper;
 import com.wujinkun.helloserver.mapper.UserMapper;
+import com.wujinkun.helloserver.security.JwtUtil;
 import com.wujinkun.helloserver.service.UserService;
 import com.wujinkun.helloserver.vo.UserDetailVO;
-import cn.hutool.json.JSONUtil;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -32,9 +32,14 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    // 实验9：注入JWT工具类
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    // Redis缓存前缀
     private static final String CACHE_KEY_PREFIX = "user:detail:";
 
-    // 原有注册方法
+    // ===================== 注册 =====================
     @Override
     public Result<String> register(UserDTO userDTO) {
         User exist = userMapper.selectOne(new LambdaQueryWrapper<User>()
@@ -49,7 +54,7 @@ public class UserServiceImpl implements UserService {
         return Result.success("注册成功，数据已存入数据库");
     }
 
-    // 原有登录方法
+    // ===================== 实验9：登录生成JWT（唯一login方法） =====================
     @Override
     public Result<String> login(UserDTO userDTO) {
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
@@ -60,10 +65,12 @@ public class UserServiceImpl implements UserService {
         if (!user.getPassword().equals(userDTO.getPassword())) {
             return Result.error(ResultCode.PASSWORD_ERROR);
         }
-        return Result.success("登录成功，Token: Bearer-" + UUID.randomUUID());
+        // 生成JWT令牌并返回
+        String jwt = jwtUtil.generateToken(userDTO.getUsername());
+        return Result.success(jwt);
     }
 
-    // 原有根据ID查询
+    // ===================== 根据ID查询用户 =====================
     @Override
     public Result<String> getUserById(Long id) {
         User user = userMapper.selectById(id);
@@ -73,7 +80,7 @@ public class UserServiceImpl implements UserService {
         return Result.success("查询用户成功：" + user.toString());
     }
 
-    // 原有分页查询
+    // ===================== 分页查询 =====================
     @Override
     public Result<Page<User>> getUserPage(Integer pageNum, Integer pageSize) {
         Page<User> page = new Page<>(pageNum, pageSize);
@@ -81,11 +88,11 @@ public class UserServiceImpl implements UserService {
         return Result.success(userPage);
     }
 
-    // ===================== 实验7 正确实现 =====================
+    // ===================== 实验7：用户详情（多表+Redis） =====================
     @Override
     public Result<UserDetailVO> getUserDetail(Long userId) {
         String key = CACHE_KEY_PREFIX + userId;
-        // 1.查缓存
+        // 1. 查Redis缓存
         String json = redisTemplate.opsForValue().get(key);
         if (json != null && !json.isBlank()) {
             try {
@@ -95,16 +102,17 @@ public class UserServiceImpl implements UserService {
                 redisTemplate.delete(key);
             }
         }
-        // 2.查数据库
+        // 2. 查数据库
         UserDetailVO detail = userInfoMapper.getUserDetail(userId);
         if (detail == null) {
             return Result.error(ResultCode.USER_NOT_EXIST);
         }
-        // 3.写缓存
+        // 3. 写入缓存
         redisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(detail), 10, TimeUnit.MINUTES);
         return Result.success(detail);
     }
 
+    // ===================== 实验7：更新用户信息 =====================
     @Override
     @Transactional
     public Result<String> updateUserInfo(UserInfo userInfo) {
@@ -116,6 +124,7 @@ public class UserServiceImpl implements UserService {
         return Result.success("用户信息更新成功");
     }
 
+    // ===================== 实验7：删除用户 =====================
     @Override
     @Transactional
     public Result<String> deleteUser(Long userId) {

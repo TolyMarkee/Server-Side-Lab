@@ -3,10 +3,12 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <groupId>com.wujinkun.helloserver</groupId>
     <artifactId>Server-Side-Lab</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <!-- 稳定无冲突版Spring Boot -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -21,7 +23,7 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- MyBatis-Plus -->
+        <!-- MyBatis-Plus Spring Boot 3 -->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
@@ -33,7 +35,7 @@
             <version>3.5.10</version>
         </dependency>
 
-        <!-- PostgreSQL -->
+        <!-- PostgreSQL驱动 -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -47,7 +49,7 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Redis -->
+        <!-- ===================== 实验7 依赖：Redis + Hutool ===================== -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
@@ -58,10 +60,29 @@
             <version>5.8.25</version>
         </dependency>
 
-        <!-- ===================== 实验8关键：Spring Security 依赖 ===================== -->
+        <!-- ===================== 实验8 依赖：Spring Security ===================== -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- ===================== 实验9 依赖：JWT（适配SpringBoot3） ===================== -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.12.6</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 
