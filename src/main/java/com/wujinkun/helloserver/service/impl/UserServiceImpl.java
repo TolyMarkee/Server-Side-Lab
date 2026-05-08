@@ -1,24 +1,17 @@
 package com.wujinkun.helloserver.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+// 👇 新增分页导入包
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wujinkun.helloserver.common.Result;
 import com.wujinkun.helloserver.common.ResultCode;
 import com.wujinkun.helloserver.dto.UserDTO;
 import com.wujinkun.helloserver.entity.User;
-import com.wujinkun.helloserver.entity.UserInfo;
-import com.wujinkun.helloserver.mapper.UserInfoMapper;
 import com.wujinkun.helloserver.mapper.UserMapper;
 import com.wujinkun.helloserver.service.UserService;
-import com.wujinkun.helloserver.vo.UserDetailVO;
-import cn.hutool.json.JSONUtil;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import java.util.UUID; // 导入UUID，用于生成Token
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -26,22 +19,15 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserMapper userMapper;
 
-    @Autowired
-    private UserInfoMapper userInfoMapper;
-
-    @Autowired
-    private StringRedisTemplate redisTemplate;
-
-    private static final String CACHE_KEY_PREFIX = "user:detail:";
-
-    // 原有注册方法
     @Override
     public Result<String> register(UserDTO userDTO) {
+        // 1. 判断用户名是否存在
         User exist = userMapper.selectOne(new LambdaQueryWrapper<User>()
                 .eq(User::getUsername, userDTO.getUsername()));
         if (exist != null) {
             return Result.error(ResultCode.USER_HAS_EXISTED);
         }
+        // 2. 写入数据库
         User user = new User();
         user.setUsername(userDTO.getUsername());
         user.setPassword(userDTO.getPassword());
@@ -49,9 +35,9 @@ public class UserServiceImpl implements UserService {
         return Result.success("注册成功，数据已存入数据库");
     }
 
-    // 原有登录方法
     @Override
     public Result<String> login(UserDTO userDTO) {
+        // 1. 查询数据库验证
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
                 .eq(User::getUsername, userDTO.getUsername()));
         if (user == null) {
@@ -60,12 +46,14 @@ public class UserServiceImpl implements UserService {
         if (!user.getPassword().equals(userDTO.getPassword())) {
             return Result.error(ResultCode.PASSWORD_ERROR);
         }
+        // 2. 登录成功，返回Token
         return Result.success("登录成功，Token: Bearer-" + UUID.randomUUID());
     }
 
-    // 原有根据ID查询
+    // 【实验五新增】实现根据ID查询用户
     @Override
     public Result<String> getUserById(Long id) {
+        // 调用MyBatis-Plus的selectById查询数据库
         User user = userMapper.selectById(id);
         if (user == null) {
             return Result.error(ResultCode.USER_NOT_EXIST);
@@ -73,55 +61,14 @@ public class UserServiceImpl implements UserService {
         return Result.success("查询用户成功：" + user.toString());
     }
 
-    // 原有分页查询
+    // 第六次实验新增：分页查询
     @Override
     public Result<Page<User>> getUserPage(Integer pageNum, Integer pageSize) {
+        // 构建分页对象：当前页、每页条数
         Page<User> page = new Page<>(pageNum, pageSize);
+        // 执行分页查询（无查询条件，查询全部用户）
         Page<User> userPage = userMapper.selectPage(page, null);
+        // 返回分页结果
         return Result.success(userPage);
-    }
-
-    // ===================== 实验7 正确实现 =====================
-    @Override
-    public Result<UserDetailVO> getUserDetail(Long userId) {
-        String key = CACHE_KEY_PREFIX + userId;
-        // 1.查缓存
-        String json = redisTemplate.opsForValue().get(key);
-        if (json != null && !json.isBlank()) {
-            try {
-                UserDetailVO vo = JSONUtil.toBean(json, UserDetailVO.class);
-                return Result.success(vo);
-            } catch (Exception e) {
-                redisTemplate.delete(key);
-            }
-        }
-        // 2.查数据库
-        UserDetailVO detail = userInfoMapper.getUserDetail(userId);
-        if (detail == null) {
-            return Result.error(ResultCode.USER_NOT_EXIST);
-        }
-        // 3.写缓存
-        redisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(detail), 10, TimeUnit.MINUTES);
-        return Result.success(detail);
-    }
-
-    @Override
-    @Transactional
-    public Result<String> updateUserInfo(UserInfo userInfo) {
-        if (userInfo == null || userInfo.getUserId() == null) {
-            return Result.error(500, "参数不能为空");
-        }
-        userInfoMapper.updateById(userInfo);
-        redisTemplate.delete(CACHE_KEY_PREFIX + userInfo.getUserId());
-        return Result.success("用户信息更新成功");
-    }
-
-    @Override
-    @Transactional
-    public Result<String> deleteUser(Long userId) {
-        userMapper.deleteById(userId);
-        userInfoMapper.delete(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUserId, userId));
-        redisTemplate.delete(CACHE_KEY_PREFIX + userId);
-        return Result.success("用户删除成功");
     }
 }
