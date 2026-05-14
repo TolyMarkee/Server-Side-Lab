@@ -19,6 +19,7 @@ public class SecurityConfig {
 
     // 实验9：注入JWT过滤器
     @Autowired
+
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
