@@ -31,6 +31,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll()
+                        // 实验10：放行聊天接口
+                        .requestMatchers(HttpMethod.POST, "/api/chat").permitAll()
                         .anyRequest().authenticated()
                 )
                 // 实验9：添加JWT过滤器到用户名密码过滤器之前
